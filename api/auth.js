@@ -1,103 +1,123 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { pool } = require('../config/database');
+// Vercel API function for authentication
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
 
-// Helper function to generate JWT token
-const generateToken = (userId, email) => {
-  return jwt.sign({ userId, email }, JWT_SECRET, { expiresIn: '7d' });
-};
-
-// Helper function to hash password
-const hashPassword = async (password) => {
-  const saltRounds = 12;
-  return await bcrypt.hash(password, saltRounds);
-};
-
-// Helper function to compare password
-const comparePassword = async (password, hash) => {
-  return await bcrypt.compare(password, hash);
-};
+// Mock users data (in production, this would be in a database)
+const users = [
+  {
+    id: 1,
+    name: 'Admin',
+    email: 'sales@restntravel.shop',
+    password: '$2a$10$lXxwk9keGgiIhMxNJsiIuOT6DEcKRkovt./0sW0I/B0zytWbKyPuq', // "SalesRNT@8912" hashed
+    role: 'admin',
+    created_at: '2024-01-01T00:00:00.000Z'
+  },
+  {
+    id: 2,
+    name: 'Test Customer',
+    email: 'customer@example.com',
+    password: '$2a$10$lXxwk9keGgiIhMxNJsiIuOT6DEcKRkovt./0sW0I/B0zytWbKyPuq', // "password123" hashed
+    role: 'customer',
+    created_at: '2024-01-01T00:00:00.000Z'
+  }
+];
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
-  const { action, email, password, name, phone, address, city, state, pinCode } = req.body;
+  const { action, email, password, name } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Email and password required' });
-  }
-
-  try {
-    if (action === 'signup') {
-      // Check if user already exists
-      const [existingUsers] = await pool.execute(
-        'SELECT id FROM users WHERE email = ?',
-        [email]
-      );
-
-      if (existingUsers.length > 0) {
-        return res.status(400).json({ success: false, message: 'User already exists' });
+  if (action === 'login') {
+    try {
+      const user = users.find(u => u.email === email);
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password' });
       }
 
-      // Hash password
-      const hashedPassword = await hashPassword(password);
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password' });
+      }
 
-      // Insert new user
-      const [result] = await pool.execute(
-        'INSERT INTO users (email, password_hash, name, phone, address, city, state, pin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [email, hashedPassword, name || null, phone || null, address || null, city || null, state || null, pinCode || null]
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
       );
-
-      const userId = result.insertId;
-
-      // Generate JWT token
-      const token = generateToken(userId, email);
 
       return res.status(200).json({
         success: true,
-        user: { id: userId, email, name },
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        },
         token
       });
 
-    } else if (action === 'login') {
-      // Find user by email
-      const [users] = await pool.execute(
-        'SELECT id, email, password_hash, name FROM users WHERE email = ?',
-        [email]
-      );
-
-      if (users.length === 0) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
-
-      const user = users[0];
-
-      // Verify password
-      const isPasswordValid = await comparePassword(password, user.password_hash);
-
-      if (!isPasswordValid) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
-
-      // Generate JWT token
-      const token = generateToken(user.id, user.email);
-
-      return res.status(200).json({
-        success: true,
-        user: { id: user.id, email: user.email, name: user.name },
-        token
+    } catch (error) {
+      console.error('Login error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Login failed. Please try again.'
       });
-
-    } else {
-      return res.status(400).json({ success: false, message: 'Invalid action' });
     }
-
-  } catch (error) {
-    console.error('Auth error:', error);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
+
+  if (action === 'signup') {
+    try {
+      const existingUser = users.find(u => u.email === email);
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'User with this email already exists'
+        });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = {
+        id: users.length + 1,
+        name,
+        email,
+        password: hashedPassword,
+        role: 'customer',
+        created_at: new Date().toISOString()
+      };
+
+      users.push(newUser);
+
+      const token = jwt.sign(
+        { userId: newUser.id, email: newUser.email, role: newUser.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role
+        },
+        token
+      });
+
+    } catch (error) {
+      console.error('Signup error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Registration failed. Please try again.'
+      });
+    }
+  }
+
+  return res.status(400).json({ success: false, message: 'Invalid action' });
 } 
