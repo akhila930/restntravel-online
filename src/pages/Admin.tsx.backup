@@ -1,0 +1,1735 @@
+import React, { useState, useEffect } from 'react';
+import { useUser } from '@/contexts/UserContext';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { 
+  Package, 
+  ShoppingCart, 
+  Users, 
+  DollarSign, 
+  Edit, 
+  Trash2, 
+  Plus,
+  Eye,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Save,
+  X,
+  RefreshCw,
+  MessageSquare,
+  Video,
+  Image,
+  LogOut
+} from 'lucide-react';
+import { toast } from 'sonner';
+
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  image: string;
+  description: string;
+  is_active: boolean;
+  delivery_charges: string | number;
+}
+
+interface Order {
+  id: number;
+  order_number: string;
+  customer_name: string;
+  customer_email: string;
+  total_amount: number;
+  status: string;
+  created_at: string;
+  items: any[];
+  items_summary?: string;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  created_at: string;
+  orders?: Order[];
+}
+
+interface Testimonial {
+  id: number;
+  name: string;
+  rating: number;
+  comment: string;
+  image: string;
+  video?: string;
+  product: string;
+  date: string;
+  is_active: boolean;
+}
+
+const Admin = () => {
+  const { user, isAuthenticated, logout } = useUser();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showUserOrders, setShowUserOrders] = useState(false);
+
+  // Product form state
+  const [productForm, setProductForm] = useState({
+    name: '',
+    category: '',
+    price: '',
+    image: '',
+    description: '',
+    is_active: true,
+    delivery_charges: '0'
+  });
+
+  // Testimonial form state
+  const [testimonialForm, setTestimonialForm] = useState({
+    name: '',
+    rating: '5',
+    comment: '',
+    product: '',
+    is_active: true
+  });
+
+  // Image upload state
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+
+  // Video upload state for testimonials
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string>('');
+
+  // QR Code management state
+  const [currentQRCode, setCurrentQRCode] = useState('/payment-qr-code.png');
+  const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
+  const [qrCodePreview, setQrCodePreview] = useState<string>('');
+  const [qrCodeHistory, setQrCodeHistory] = useState<any[]>([]);
+  const [updatingQR, setUpdatingQR] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    // For development, allow direct access if no user is logged in
+    if (!isAuthenticated && process.env.NODE_ENV === 'development') {
+      console.log('Development mode: Allowing admin access without authentication');
+      loadDashboardData();
+      return;
+    }
+
+    if (!isAuthenticated) {
+      console.log('Not authenticated, redirecting to login');
+      navigate('/login');
+      return;
+    }
+
+    // Check if user is admin
+    if (user?.role !== 'admin') {
+      console.log('User is not admin, role:', user?.role);
+      toast.error('Access denied. Admin privileges required.');
+      navigate('/');
+      return;
+    }
+
+    console.log('Admin access granted for user:', user.email);
+    loadDashboardData();
+    
+    // Set up auto-refresh for orders every 30 seconds
+    const interval = setInterval(() => {
+      loadDashboardData();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated, navigate, user]);
+
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Load products
+      const productsResponse = await fetch('/api/admin?action=products');
+      const productsData = await productsResponse.json();
+      if (productsData.success) {
+        setProducts(productsData.products);
+      }
+
+      // Load orders
+      const ordersResponse = await fetch('/api/admin?action=orders');
+      const ordersData = await ordersResponse.json();
+      if (ordersData.success) {
+        setOrders(ordersData.orders);
+      }
+
+      // Load users
+      const usersResponse = await fetch('/api/admin?action=users');
+      const usersData = await usersResponse.json();
+      if (usersData.success) {
+        setUsers(usersData.users);
+      }
+
+      // Load testimonials
+      const testimonialsResponse = await fetch('/api/testimonials');
+      const testimonialsData = await testimonialsResponse.json();
+      if (testimonialsData.success) {
+        setTestimonials(testimonialsData.testimonials);
+      }
+
+      // Load QR code configuration
+      const qrResponse = await fetch('/api/qr-code');
+      const qrData = await qrResponse.json();
+      if (qrData.success) {
+        setCurrentQRCode(qrData.currentQR);
+        setQrCodeHistory(qrData.qrHistory || []);
+      }
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const convertImageToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        resolve(base64.split(',')[1]); // Remove data:image/jpeg;base64, prefix
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const handleProductSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      let imageData = null;
+      if (imageFile) {
+        const base64 = await convertImageToBase64(imageFile);
+        imageData = {
+          base64,
+          filename: imageFile.name
+        };
+      }
+
+      const response = await fetch('/api/admin?action=products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...productForm,
+          imageFile: imageData
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setProducts([...products, data.product]);
+        setProductForm({
+          name: '',
+          category: '',
+          price: '',
+          image: '',
+          description: '',
+          is_active: true,
+          delivery_charges: '0'
+        });
+        setImageFile(null);
+        setImagePreview('');
+        toast.success('Product added successfully!');
+      } else {
+        toast.error(data.message || 'Failed to add product');
+      }
+    } catch (error) {
+      toast.error('Failed to add product');
+    }
+  };
+
+  const handleProductUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingProduct) return;
+
+    try {
+      let imageData = null;
+      if (imageFile) {
+        const base64 = await convertImageToBase64(imageFile);
+        imageData = {
+          base64,
+          filename: imageFile.name
+        };
+      }
+
+      const response = await fetch(`/api/admin?action=products&id=${editingProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...productForm,
+          imageFile: imageData
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setProducts(products.map(p => 
+          p.id === editingProduct.id 
+            ? { ...p, ...productForm, price: parseFloat(productForm.price) }
+            : p
+        ));
+        setEditingProduct(null);
+        setProductForm({
+          name: '',
+          category: '',
+          price: '',
+          image: '',
+          description: '',
+          is_active: true,
+          delivery_charges: '0'
+        });
+        setImageFile(null);
+        setImagePreview('');
+        toast.success('Product updated successfully!');
+      } else {
+        toast.error(data.message || 'Failed to update product');
+      }
+    } catch (error) {
+      toast.error('Failed to update product');
+    }
+  };
+
+  const startEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name,
+      category: product.category,
+      price: product.price.toString(),
+      image: product.image,
+      description: product.description,
+      is_active: product.is_active,
+      delivery_charges: product.delivery_charges.toString()
+    });
+    setImageFile(null);
+    setImagePreview('');
+  };
+
+  const cancelEdit = () => {
+    setEditingProduct(null);
+    setProductForm({
+      name: '',
+      category: '',
+      price: '',
+      image: '',
+      description: '',
+      is_active: true,
+      delivery_charges: '0'
+    });
+    setImageFile(null);
+    setImagePreview('');
+  };
+
+  const updateOrderStatus = async (orderId: number, status: string) => {
+    try {
+      const response = await fetch(`/api/admin?action=orders&id=${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setOrders(orders.map(order => 
+          order.id === orderId ? { ...order, status } : order
+        ));
+        toast.success(`Order status updated to ${status}`);
+      } else {
+        toast.error(data.message || 'Failed to update order status');
+      }
+    } catch (error) {
+      toast.error('Failed to update order status');
+    }
+  };
+
+  const deleteProduct = async (productId: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    try {
+      const response = await fetch(`/api/admin?action=products&id=${productId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setProducts(products.filter(p => p.id !== productId));
+        toast.success('Product deleted successfully!');
+      } else {
+        toast.error(data.message || 'Failed to delete product');
+      }
+    } catch (error) {
+      toast.error('Failed to delete product');
+    }
+  };
+
+  const viewUserOrders = async (user: User) => {
+    setSelectedUser(user);
+    setShowUserOrders(true);
+    
+    // Load user's orders
+    try {
+      const response = await fetch(`/api/admin?action=user-orders&userId=${user.id}`);
+      const data = await response.json();
+      if (data.success) {
+        setSelectedUser({ ...user, orders: data.orders });
+      }
+    } catch (error) {
+      console.error('Error loading user orders:', error);
+    }
+  };
+
+  // QR Code management functions
+  const handleQRCodeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setQrCodeFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setQrCodePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const updateQRCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!qrCodeFile) {
+      toast.error('Please select a QR code image');
+      return;
+    }
+
+    setUpdatingQR(true);
+    try {
+      const base64Data = await convertImageToBase64(qrCodeFile);
+      
+      const response = await fetch('/api/qr-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'update',
+          qrCodeData: base64Data,
+          filename: qrCodeFile.name
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCurrentQRCode(data.newQR);
+        setQrCodeFile(null);
+        setQrCodePreview('');
+        toast.success('QR code updated successfully');
+        loadDashboardData(); // Reload to get updated history
+      } else {
+        toast.error(data.message || 'Failed to update QR code');
+      }
+    } catch (error) {
+      console.error('Error updating QR code:', error);
+      toast.error('Failed to update QR code');
+    } finally {
+      setUpdatingQR(false);
+    }
+  };
+
+  // Testimonial management functions
+  const handleTestimonialImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleTestimonialVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setVideoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleTestimonialSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      let imageData = null;
+      let videoData = null;
+      
+      if (imageFile) {
+        const base64 = await convertImageToBase64(imageFile);
+        imageData = {
+          base64,
+          filename: imageFile.name
+        };
+      }
+
+      if (videoFile) {
+        const base64 = await convertImageToBase64(videoFile);
+        videoData = {
+          base64,
+          filename: videoFile.name
+        };
+      }
+
+      const response = await fetch('/api/testimonials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'add',
+          testimonialData: {
+            ...testimonialForm,
+            imageFile: imageData,
+            videoFile: videoData
+          }
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setTestimonials([...testimonials, data.testimonial]);
+        setTestimonialForm({
+          name: '',
+          rating: '5',
+          comment: '',
+          product: '',
+          is_active: true
+        });
+        setImageFile(null);
+        setImagePreview('');
+        setVideoFile(null);
+        setVideoPreview('');
+        toast.success('Testimonial added successfully!');
+      } else {
+        toast.error(data.message || 'Failed to add testimonial');
+      }
+    } catch (error) {
+      toast.error('Failed to add testimonial');
+    }
+  };
+
+  const handleTestimonialUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingTestimonial) return;
+
+    try {
+      let imageData = null;
+      let videoData = null;
+      
+      if (imageFile) {
+        const base64 = await convertImageToBase64(imageFile);
+        imageData = {
+          base64,
+          filename: imageFile.name
+        };
+      }
+
+      if (videoFile) {
+        const base64 = await convertImageToBase64(videoFile);
+        videoData = {
+          base64,
+          filename: videoFile.name
+        };
+      }
+
+      const response = await fetch('/api/testimonials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          testimonialData: {
+            id: editingTestimonial.id,
+            ...testimonialForm,
+            imageFile: imageData,
+            videoFile: videoData
+          }
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setTestimonials(testimonials.map(t => t.id === editingTestimonial.id ? data.testimonial : t));
+        setEditingTestimonial(null);
+        setTestimonialForm({
+          name: '',
+          rating: '5',
+          comment: '',
+          product: '',
+          is_active: true
+        });
+        setImageFile(null);
+        setImagePreview('');
+        setVideoFile(null);
+        setVideoPreview('');
+        toast.success('Testimonial updated successfully!');
+      } else {
+        toast.error(data.message || 'Failed to update testimonial');
+      }
+    } catch (error) {
+      toast.error('Failed to update testimonial');
+    }
+  };
+
+  const startEditTestimonial = (testimonial: Testimonial) => {
+    setEditingTestimonial(testimonial);
+    setTestimonialForm({
+      name: testimonial.name,
+      rating: testimonial.rating.toString(),
+      comment: testimonial.comment,
+      product: testimonial.product,
+      is_active: testimonial.is_active
+    });
+    setImagePreview(testimonial.image);
+    setVideoPreview(testimonial.video || '');
+    setImageFile(null);
+    setVideoFile(null);
+  };
+
+  const cancelEditTestimonial = () => {
+    setEditingTestimonial(null);
+    setTestimonialForm({
+      name: '',
+      rating: '5',
+      comment: '',
+      product: '',
+      is_active: true
+    });
+    setImageFile(null);
+    setImagePreview('');
+    setVideoFile(null);
+    setVideoPreview('');
+  };
+
+  const deleteTestimonial = async (testimonialId: number) => {
+    if (!confirm('Are you sure you want to delete this testimonial?')) return;
+
+    try {
+      const response = await fetch('/api/testimonials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete',
+          testimonialData: { id: testimonialId }
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setTestimonials(testimonials.filter(t => t.id !== testimonialId));
+        toast.success('Testimonial deleted successfully!');
+      } else {
+        toast.error(data.message || 'Failed to delete testimonial');
+      }
+    } catch (error) {
+      toast.error('Failed to delete testimonial');
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading admin panel...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-600">Manage your RestNTravel store</p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={loadDashboardData} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh Data
+            </Button>
+            <Button onClick={handleLogout} variant="outline" className="text-red-600 hover:text-red-700">
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Package className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Products</p>
+                  <p className="text-2xl font-bold text-gray-900">{products.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <ShoppingCart className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                  <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <MessageSquare className="h-8 w-8 text-orange-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Testimonials</p>
+                  <p className="text-2xl font-bold text-gray-900">{testimonials.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <DollarSign className="h-8 w-8 text-yellow-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ₹{orders.reduce((sum, order) => sum + order.total_amount, 0)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content with Scrolling */}
+        <div className="h-[calc(100vh-300px)] overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="orders">Orders</TabsTrigger>
+              <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+              <TabsTrigger value="qr-code">QR Code</TabsTrigger>
+            </TabsList>
+
+            <div className="flex-1 overflow-y-auto">
+
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Orders */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Orders</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {orders.slice(0, 5).map((order) => (
+                      <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{order.order_number}</p>
+                          <p className="text-sm text-gray-600">{order.customer_name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">₹{order.total_amount}</p>
+                          <Badge variant={order.status === 'pending' ? 'secondary' : 'default'}>
+                            {order.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Users */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Users</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {users.slice(0, 5).map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Products Tab */}
+          <TabsContent value="products" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Product Management</h2>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Product
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Product</DialogTitle>
+                    <DialogDescription>
+                      Add a new product to your RestNTravel store. Fill in all required fields and optionally upload an image.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleProductSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Product Name</Label>
+                      <Input
+                        id="name"
+                        value={productForm.name}
+                        onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Select value={productForm.category} onValueChange={(value) => setProductForm({...productForm, category: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pillows">Pillows</SelectItem>
+                          <SelectItem value="mattresses">Mattresses</SelectItem>
+                          <SelectItem value="quilts">Quilts</SelectItem>
+                          <SelectItem value="beanbags">Bean Bags</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="price">Price (₹)</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        value={productForm.price}
+                        onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="delivery_charges">Delivery Charges (₹)</Label>
+                      <Input
+                        id="delivery_charges"
+                        type="number"
+                        value={productForm.delivery_charges}
+                        onChange={(e) => setProductForm({...productForm, delivery_charges: e.target.value})}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="image">Product Image</Label>
+                      <div className="space-y-2">
+                        <Input
+                          id="image"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="cursor-pointer"
+                        />
+                        {imagePreview && (
+                          <div className="mt-2">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="w-20 h-20 object-cover rounded border"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Image preview</p>
+                          </div>
+                        )}
+                        <Input
+                          value={productForm.image}
+                          onChange={(e) => setProductForm({...productForm, image: e.target.value})}
+                          placeholder="Or enter image filename (e.g., product-image.jpg)"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        value={productForm.description}
+                        onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="is_active"
+                        checked={productForm.is_active}
+                        onChange={(e) => setProductForm({...productForm, is_active: e.target.checked})}
+                      />
+                      <Label htmlFor="is_active">Active (visible to customers)</Label>
+                    </div>
+                    <Button type="submit" className="w-full">
+                      <Save className="h-4 w-4 mr-2" />
+                      Add Product
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <Card key={product.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                        {product.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => startEditProduct(product)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => deleteProduct(product.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <img 
+                      src={`/Products/${product.image}?v=${Date.now()}`} 
+                      alt={product.name}
+                      className="w-full h-32 object-cover rounded-lg mb-4"
+                      onError={(e) => {
+                        // Try alternative paths if the main path fails
+                        const img = e.currentTarget;
+                        if (!img.dataset.fallback1) {
+                          img.dataset.fallback1 = 'true';
+                          img.src = `/Products/${product.image.toLowerCase()}?v=${Date.now()}`;
+                        } else if (!img.dataset.fallback2) {
+                          img.dataset.fallback2 = 'true';
+                          img.src = `/Products/${product.image.replace(/\.[^/.]+$/, '.jpg')}?v=${Date.now()}`;
+                        } else if (!img.dataset.fallback3) {
+                          img.dataset.fallback3 = 'true';
+                          img.src = `/Products/${product.image.replace(/\.[^/.]+$/, '.png')}?v=${Date.now()}`;
+                        } else {
+                          // Final fallback to placeholder
+                          img.src = '/placeholder.svg';
+                        }
+                      }}
+                    />
+                    
+                    <h3 className="font-semibold mb-2">{product.name}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{product.category}</p>
+                    <p className="font-bold text-green-600">₹{product.price}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Edit Product Dialog */}
+            {editingProduct && (
+              <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Edit Product</DialogTitle>
+                    <DialogDescription>
+                      Update the product details. You can modify any field and optionally upload a new image.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleProductUpdate} className="space-y-4">
+                    <div>
+                      <Label htmlFor="edit-name">Product Name</Label>
+                      <Input
+                        id="edit-name"
+                        value={productForm.name}
+                        onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-category">Category</Label>
+                      <Select value={productForm.category} onValueChange={(value) => setProductForm({...productForm, category: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pillows">Pillows</SelectItem>
+                          <SelectItem value="mattresses">Mattresses</SelectItem>
+                          <SelectItem value="quilts">Quilts</SelectItem>
+                          <SelectItem value="beanbags">Bean Bags</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-price">Price (₹)</Label>
+                      <Input
+                        id="edit-price"
+                        type="number"
+                        value={productForm.price}
+                        onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-delivery_charges">Delivery Charges (₹)</Label>
+                      <Input
+                        id="edit-delivery_charges"
+                        type="number"
+                        value={productForm.delivery_charges}
+                        onChange={(e) => setProductForm({...productForm, delivery_charges: e.target.value})}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-image">Product Image</Label>
+                      <div className="space-y-2">
+                        <Input
+                          id="edit-image"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="cursor-pointer"
+                        />
+                        {imagePreview && (
+                          <div className="mt-2">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="w-20 h-20 object-cover rounded border"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Image preview</p>
+                          </div>
+                        )}
+                        <Input
+                          value={productForm.image}
+                          onChange={(e) => setProductForm({...productForm, image: e.target.value})}
+                          placeholder="Or enter image filename (e.g., product-image.jpg)"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-description">Description</Label>
+                      <Textarea
+                        id="edit-description"
+                        value={productForm.description}
+                        onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="edit-is_active"
+                        checked={productForm.is_active}
+                        onChange={(e) => setProductForm({...productForm, is_active: e.target.checked})}
+                      />
+                      <Label htmlFor="edit-is_active">Active (visible to customers)</Label>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button type="submit" className="flex-1">
+                        <Save className="h-4 w-4 mr-2" />
+                        Update Product
+                      </Button>
+                      <Button type="button" variant="outline" onClick={cancelEdit}>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </TabsContent>
+
+          {/* Orders Tab */}
+          <TabsContent value="orders" className="space-y-6">
+            <h2 className="text-2xl font-bold">Order Management</h2>
+            
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <Card key={order.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="font-semibold">{order.order_number}</h3>
+                        <p className="text-sm text-gray-600">{order.customer_email}</p>
+                        {order.items_summary && (
+                          <p className="text-sm text-gray-500 mt-1">{order.items_summary}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-lg">₹{order.total_amount}</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateOrderStatus(order.id, 'confirmed')}
+                          disabled={order.status === 'confirmed'}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Confirm
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateOrderStatus(order.id, 'processing')}
+                          disabled={order.status === 'processing'}
+                        >
+                          <AlertCircle className="h-4 w-4 mr-1" />
+                          Process
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateOrderStatus(order.id, 'shipped')}
+                          disabled={order.status === 'shipped'}
+                        >
+                          <Package className="h-4 w-4 mr-1" />
+                          Ship
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateOrderStatus(order.id, 'delivered')}
+                          disabled={order.status === 'delivered'}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Deliver
+                        </Button>
+                      </div>
+                      
+                      <Badge variant={
+                        order.status === 'pending' ? 'secondary' :
+                        order.status === 'confirmed' ? 'default' :
+                        order.status === 'processing' ? 'default' :
+                        order.status === 'shipped' ? 'default' :
+                        order.status === 'delivered' ? 'default' : 'destructive'
+                      }>
+                        {order.status}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-6">
+            <h2 className="text-2xl font-bold">User Management</h2>
+            
+            <div className="space-y-4">
+              {users.map((user) => (
+                <Card key={user.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{user.name}</h3>
+                        <p className="text-sm text-gray-600">{user.email}</p>
+                        <p className="text-xs text-gray-500">
+                          Joined: {new Date(user.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => viewUserOrders(user)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View Orders
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* User Orders Dialog */}
+            {selectedUser && (
+              <Dialog open={showUserOrders} onOpenChange={setShowUserOrders}>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Orders for {selectedUser.name}</DialogTitle>
+                    <DialogDescription>
+                      View and manage all orders placed by this user. You can update order statuses directly from here.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {selectedUser.orders && selectedUser.orders.length > 0 ? (
+                      selectedUser.orders.map((order) => (
+                        <Card key={order.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <h4 className="font-semibold">{order.order_number}</h4>
+                                <p className="text-sm text-gray-600">{order.customer_email}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold">₹{order.total_amount}</p>
+                                <Badge variant={order.status === 'pending' ? 'secondary' : 'default'}>
+                                  {order.status}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => updateOrderStatus(order.id, 'confirmed')}
+                                disabled={order.status === 'confirmed'}
+                              >
+                                Confirm
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => updateOrderStatus(order.id, 'processing')}
+                                disabled={order.status === 'processing'}
+                              >
+                                Process
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => updateOrderStatus(order.id, 'shipped')}
+                                disabled={order.status === 'shipped'}
+                              >
+                                Ship
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      <p className="text-center text-gray-500 py-8">No orders found for this user.</p>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </TabsContent>
+
+          {/* Testimonials Tab */}
+          <TabsContent value="testimonials" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Testimonial Management</h2>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Testimonial
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Testimonial</DialogTitle>
+                    <DialogDescription>
+                      Add a new testimonial to your RestNTravel store. You can optionally upload an image or video.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleTestimonialSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="testimonial-name">Name</Label>
+                      <Input
+                        id="testimonial-name"
+                        value={testimonialForm.name}
+                        onChange={(e) => setTestimonialForm({...testimonialForm, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="testimonial-rating">Rating (1-5)</Label>
+                      <Select value={testimonialForm.rating} onValueChange={(value) => setTestimonialForm({...testimonialForm, rating: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select rating" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 Star</SelectItem>
+                          <SelectItem value="2">2 Stars</SelectItem>
+                          <SelectItem value="3">3 Stars</SelectItem>
+                          <SelectItem value="4">4 Stars</SelectItem>
+                          <SelectItem value="5">5 Stars</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="testimonial-comment">Comment</Label>
+                      <Textarea
+                        id="testimonial-comment"
+                        value={testimonialForm.comment}
+                        onChange={(e) => setTestimonialForm({...testimonialForm, comment: e.target.value})}
+                        rows={3}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="testimonial-product">Product (if applicable)</Label>
+                      <Select value={testimonialForm.product} onValueChange={(value) => setTestimonialForm({...testimonialForm, product: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select product" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pillows">Pillows</SelectItem>
+                          <SelectItem value="mattresses">Mattresses</SelectItem>
+                          <SelectItem value="quilts">Quilts</SelectItem>
+                          <SelectItem value="beanbags">Bean Bags</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="testimonial-is_active"
+                        checked={testimonialForm.is_active}
+                        onChange={(e) => setTestimonialForm({...testimonialForm, is_active: e.target.checked})}
+                      />
+                      <Label htmlFor="testimonial-is_active">Active (visible to customers)</Label>
+                    </div>
+                    <div>
+                      <Label htmlFor="testimonial-image">Image (optional)</Label>
+                      <Input
+                        id="testimonial-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleTestimonialImageUpload}
+                        className="cursor-pointer"
+                      />
+                      {imagePreview && (
+                        <div className="mt-2">
+                          <img 
+                            src={imagePreview} 
+                            alt="Preview" 
+                            className="w-20 h-20 object-cover rounded border"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Image preview</p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="testimonial-video">Video (optional)</Label>
+                      <Input
+                        id="testimonial-video"
+                        type="file"
+                        accept="video/*"
+                        onChange={handleTestimonialVideoUpload}
+                        className="cursor-pointer"
+                      />
+                      {videoPreview && (
+                        <div className="mt-2">
+                          <video 
+                            src={videoPreview} 
+                            controls 
+                            className="w-20 h-20 object-cover rounded border"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Video preview</p>
+                        </div>
+                      )}
+                    </div>
+                    <Button type="submit" className="w-full">
+                      <Save className="h-4 w-4 mr-2" />
+                      Add Testimonial
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {testimonials.map((testimonial) => (
+                <Card key={testimonial.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <Badge variant={testimonial.is_active ? 'default' : 'secondary'}>
+                        {testimonial.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => startEditTestimonial(testimonial)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => deleteTestimonial(testimonial.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center mb-2">
+                      <p className="font-semibold mr-2">Rating: {testimonial.rating} stars</p>
+                      <Badge variant="secondary">{testimonial.rating} Stars</Badge>
+                    </div>
+                    <p className="text-gray-800 mb-2">"{testimonial.comment}"</p>
+                    <p className="text-sm text-gray-600">By {testimonial.name} on {new Date(testimonial.date).toLocaleDateString()}</p>
+
+                    {testimonial.image && (
+                      <div className="mt-4">
+                        <img 
+                          src={`/Testimonials/${testimonial.image}?v=${Date.now()}`} 
+                          alt={testimonial.name}
+                          className="w-full h-32 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Image</p>
+                      </div>
+                    )}
+                    {testimonial.video && (
+                      <div className="mt-4">
+                        <video 
+                          src={`/Testimonials/${testimonial.video}?v=${Date.now()}`} 
+                          controls 
+                          className="w-full h-32 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Video</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Edit Testimonial Dialog */}
+            {editingTestimonial && (
+              <Dialog open={!!editingTestimonial} onOpenChange={() => setEditingTestimonial(null)}>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Edit Testimonial</DialogTitle>
+                    <DialogDescription>
+                      Update the testimonial details. You can modify any field and optionally upload a new image or video.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleTestimonialUpdate} className="space-y-4">
+                    <div>
+                      <Label htmlFor="edit-testimonial-name">Name</Label>
+                      <Input
+                        id="edit-testimonial-name"
+                        value={testimonialForm.name}
+                        onChange={(e) => setTestimonialForm({...testimonialForm, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-testimonial-rating">Rating (1-5)</Label>
+                      <Select value={testimonialForm.rating} onValueChange={(value) => setTestimonialForm({...testimonialForm, rating: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select rating" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 Star</SelectItem>
+                          <SelectItem value="2">2 Stars</SelectItem>
+                          <SelectItem value="3">3 Stars</SelectItem>
+                          <SelectItem value="4">4 Stars</SelectItem>
+                          <SelectItem value="5">5 Stars</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-testimonial-comment">Comment</Label>
+                      <Textarea
+                        id="edit-testimonial-comment"
+                        value={testimonialForm.comment}
+                        onChange={(e) => setTestimonialForm({...testimonialForm, comment: e.target.value})}
+                        rows={3}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-testimonial-product">Product (if applicable)</Label>
+                      <Select value={testimonialForm.product} onValueChange={(value) => setTestimonialForm({...testimonialForm, product: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select product" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pillows">Pillows</SelectItem>
+                          <SelectItem value="mattresses">Mattresses</SelectItem>
+                          <SelectItem value="quilts">Quilts</SelectItem>
+                          <SelectItem value="beanbags">Bean Bags</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="edit-testimonial-is_active"
+                        checked={testimonialForm.is_active}
+                        onChange={(e) => setTestimonialForm({...testimonialForm, is_active: e.target.checked})}
+                      />
+                      <Label htmlFor="edit-testimonial-is_active">Active (visible to customers)</Label>
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-testimonial-image">Image (optional)</Label>
+                      <Input
+                        id="edit-testimonial-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleTestimonialImageUpload}
+                        className="cursor-pointer"
+                      />
+                      {imagePreview && (
+                        <div className="mt-2">
+                          <img 
+                            src={imagePreview} 
+                            alt="Preview" 
+                            className="w-20 h-20 object-cover rounded border"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Image preview</p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-testimonial-video">Video (optional)</Label>
+                      <Input
+                        id="edit-testimonial-video"
+                        type="file"
+                        accept="video/*"
+                        onChange={handleTestimonialVideoUpload}
+                        className="cursor-pointer"
+                      />
+                      {videoPreview && (
+                        <div className="mt-2">
+                          <video 
+                            src={videoPreview} 
+                            controls 
+                            className="w-20 h-20 object-cover rounded border"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Video preview</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button type="submit" className="flex-1">
+                        <Save className="h-4 w-4 mr-2" />
+                        Update Testimonial
+                      </Button>
+                      <Button type="button" variant="outline" onClick={cancelEditTestimonial}>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </TabsContent>
+
+          {/* QR Code Tab */}
+          <TabsContent value="qr-code" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">QR Code Management</h2>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Current QR Code */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Current QR Code</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <img 
+                      src={currentQRCode} 
+                      alt="Current QR Code" 
+                      className="w-48 h-48 mx-auto object-contain border rounded-lg"
+                      onError={(e) => {
+                        e.currentTarget.src = '/placeholder.svg';
+                      }}
+                    />
+                    <p className="text-sm text-gray-600 mt-2">Currently displayed to customers</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Update QR Code */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Update QR Code</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={updateQRCode} className="space-y-4">
+                    <div>
+                      <Label htmlFor="qr-code-file">Upload New QR Code</Label>
+                      <Input
+                        id="qr-code-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleQRCodeUpload}
+                        className="cursor-pointer"
+                      />
+                      {qrCodePreview && (
+                        <div className="mt-2">
+                          <img 
+                            src={qrCodePreview} 
+                            alt="QR Code Preview" 
+                            className="w-32 h-32 object-contain border rounded"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Preview</p>
+                        </div>
+                      )}
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full"
+                      disabled={!qrCodeFile || updatingQR}
+                    >
+                      {updatingQR ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Update QR Code
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* QR Code History */}
+            {qrCodeHistory.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>QR Code History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {qrCodeHistory.map((qr, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{qr.filename}</p>
+                          <p className="text-sm text-gray-600">
+                            Updated: {new Date(qr.updatedAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <Badge variant="secondary">Previous</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default Admin; 

@@ -1,0 +1,15 @@
+{
+  "currentQR": "/qr-code-1753760183760.png",
+  "qrHistory": [
+    {
+      "filename": "/qr-code-1753760100016.png",
+      "updatedAt": "2025-07-29T03:36:23.760Z",
+      "updatedBy": "admin"
+    },
+    {
+      "filename": "/payment-qr-code.png",
+      "updatedAt": "2025-07-29T03:35:00.018Z",
+      "updatedBy": "admin"
+    }
+  ]
+}

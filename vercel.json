@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dist/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "DOMAIN": "restntravel.shop",
+    "PROTOCOL": "https",
+    "SALES_EMAIL": "sales@restntravel.shop",
+    "INFO_EMAIL": "info@restntravel.shop",
+    "SMTP_HOST": "smtp.hostinger.com",
+    "SMTP_PORT": "587",
+    "SMTP_USER": "sales@restntravel.shop",
+    "SMTP_PASS": "SalesRNT@8912"
+  }
+} 

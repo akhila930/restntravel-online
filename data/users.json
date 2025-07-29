@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "name": "Admin",
+    "email": "sales@restntravel.shop",
+    "password": "$2a$10$lXxwk9keGgiIhMxNJsiIuOT6DEcKRkovt./0sW0I/B0zytWbKyPuq",
+    "role": "admin",
+    "created_at": "2024-07-29T09:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Macherla Akhila",
+    "email": "akhilamarchela0987@gmail.com",
+    "password": "$2a$10$uqHgmUJ2sc6nUsT0FP/.SuCi3ZaClcMozitAzFxZUXoiemUZpK8ZS",
+    "role": "customer",
+    "created_at": "2025-07-29T04:29:33.455Z"
+  },
+  {
+    "id": 3,
+    "name": "Macherla Akhila",
+    "email": "satyamacherla078@gmail.com",
+    "password": "$2a$10$jmCtUnT2kb21dtjC80WNd.35F2A0ZgwR9mb57rOgovAapEJm85u.i",
+    "role": "customer",
+    "created_at": "2025-07-29T04:30:07.860Z"
+  },
+  {
+    "id": 4,
+    "name": "Macherla Akhila",
+    "email": "akhila@gmail.com",
+    "password": "$2a$10$nTPET7nBQ.rfY636GdXhouXrjinaA3WXj/KAjRcepgn1Ace2lkYQ6",
+    "role": "customer",
+    "created_at": "2025-07-29T10:01:00.476Z"
+  }
+]

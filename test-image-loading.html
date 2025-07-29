@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Loading Test</title>
+</head>
+<body>
+    <h1>Image Loading Test</h1>
+    <p>Testing IMG_3572.JPG:</p>
+    <img src="/Products/IMG_3572.JPG" alt="Test Image" style="width: 200px; height: 200px; border: 1px solid red;" 
+         onload="console.log('Image loaded successfully')" 
+         onerror="console.log('Image failed to load')" />
+    
+    <p>Testing with lowercase:</p>
+    <img src="/Products/img_3572.jpg" alt="Test Image Lowercase" style="width: 200px; height: 200px; border: 1px solid blue;" 
+         onload="console.log('Lowercase image loaded successfully')" 
+         onerror="console.log('Lowercase image failed to load')" />
+    
+    <p>Testing with .jpg extension:</p>
+    <img src="/Products/IMG_3572.jpg" alt="Test Image JPG" style="width: 200px; height: 200px; border: 1px solid green;" 
+         onload="console.log('JPG image loaded successfully')" 
+         onerror="console.log('JPG image failed to load')" />
+</body>
+</html> 
