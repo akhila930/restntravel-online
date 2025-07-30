@@ -5,8 +5,8 @@ const emailConfig = {
   sales: process.env.SALES_EMAIL || 'sales@restntravel.shop',
   smtp: {
     host: process.env.SMTP_HOST || 'smtp.hostinger.com',
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: false,
+    port: parseInt(process.env.SMTP_PORT) || 465,
+    secure: true,
     auth: {
       user: process.env.SMTP_USER || 'sales@restntravel.shop',
       pass: process.env.SMTP_PASS || 'SalesRNT@8912'
