@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Handle API requests
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ server-production.js [L]
+
+# Handle React routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /dist/index.html [L]
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block" 
