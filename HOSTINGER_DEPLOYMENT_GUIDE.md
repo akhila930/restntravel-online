@@ -11,27 +11,18 @@ This guide will help you deploy your RestNTravel e-commerce application on Hosti
 
 ## 📋 **Prerequisites**
 
-1. ✅ **Hostinger Hosting Plan** - Business or Premium plan (supports Node.js)
-2. ✅ **MySQL Database** - Create in Hostinger control panel
+1. ✅ **Hostinger Hosting Plan** - Premium plan (supports Node.js)
+2. ✅ **MySQL Database** - Already created in Hostinger control panel
 3. ✅ **Domain** - `restntravel.shop` (already purchased)
 4. ✅ **Email** - `sales@restntravel.shop` (already configured)
 
-## 🔧 **Step 1: Set Up MySQL Database**
+## 🔧 **Step 1: Database Configuration (COMPLETED)**
 
-### **1.1 Create Database in Hostinger**
-1. **Login to Hostinger** control panel
-2. **Go to "Databases"** → "MySQL Databases"
-3. **Create new database:**
-   - **Database name:** `restntravel_db`
-   - **Username:** `restntravel_user`
-   - **Password:** `[generate strong password]`
-4. **Note down these credentials** - you'll need them later
-
-### **1.2 Database Credentials Example:**
+### **✅ Your Database Credentials:**
 ```
-Database Name: restntravel_db
-Database User: restntravel_user
-Database Password: YourStrongPassword123!
+Database Name: u897731037_restntravel_db
+Database User: u897731037_restntravel_us
+Database Password: Sales@8912
 Database Host: localhost
 Database Port: 3306
 ```
@@ -47,14 +38,14 @@ npm install
 npm run build
 ```
 
-### **2.2 Create Environment File**
-Create `.env` file in your project root:
+### **2.2 Environment File (ALREADY CONFIGURED)**
+Your `.env` file is already configured with the correct credentials:
 ```env
 # Database Configuration
 DB_HOST=localhost
-DB_USER=restntravel_user
-DB_PASSWORD=YourStrongPassword123!
-DB_NAME=restntravel_db
+DB_USER=u897731037_restntravel_us
+DB_PASSWORD=Sales@8912
+DB_NAME=u897731037_restntravel_db
 DB_PORT=3306
 
 # Email Configuration
@@ -68,7 +59,7 @@ SMTP_PASS=SalesRNT@8912
 # Application Configuration
 NODE_ENV=production
 PORT=3000
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_SECRET=restntravel-super-secret-jwt-key-2024-production
 DOMAIN=restntravel.shop
 PROTOCOL=https
 ```
@@ -88,7 +79,8 @@ PROTOCOL=https
    - `dist/` folder (built React app)
    - `config/` folder
    - `routes/` folder
-   - `.env` file
+   - `.htaccess` file
+   - `.env` file (with your credentials)
 
 ### **3.3 File Structure on Hostinger:**
 ```
@@ -144,25 +136,8 @@ chmod +x start.sh
 2. **Point `restntravel.shop`** to your hosting
 3. **Enable SSL certificate** (automatic with Hostinger)
 
-### **5.2 Create .htaccess File**
-Create `.htaccess` file in `public_html`:
-```apache
-RewriteEngine On
-
-# Handle API requests
-RewriteCond %{REQUEST_URI} ^/api/
-RewriteRule ^api/(.*)$ server-production.js [L]
-
-# Handle React routes
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /dist/index.html [L]
-
-# Security headers
-Header always set X-Content-Type-Options nosniff
-Header always set X-Frame-Options DENY
-Header always set X-XSS-Protection "1; mode=block"
-```
+### **5.2 .htaccess File (ALREADY CREATED)**
+The `.htaccess` file is already configured for your deployment.
 
 ## 🔧 **Step 6: Start the Server**
 
@@ -212,7 +187,7 @@ Header always set X-XSS-Protection "1; mode=block"
 ## 📧 **Step 8: Email Configuration**
 
 ### **8.1 Verify SMTP Settings**
-Your `.env` file should have:
+Your `.env` file already has the correct settings:
 ```env
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=465
@@ -227,12 +202,8 @@ SMTP_PASS=SalesRNT@8912
 
 ## 🔒 **Step 9: Security & Optimization**
 
-### **9.1 Update JWT Secret**
-Generate a strong JWT secret:
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
-Update in `.env` file.
+### **9.1 JWT Secret (ALREADY SET)**
+Your JWT secret is already configured in the `.env` file.
 
 ### **9.2 Enable HTTPS**
 Hostinger automatically provides SSL certificates.
@@ -271,12 +242,12 @@ After deployment:
 ## 🔧 **Troubleshooting**
 
 ### **If Database Connection Fails:**
-1. **Check database credentials** in `.env`
-2. **Verify database exists** in Hostinger
+1. **Check database credentials** in `.env` (already correct)
+2. **Verify database exists** in Hostinger (already created)
 3. **Check database permissions**
 
 ### **If Emails Don't Send:**
-1. **Verify SMTP credentials**
+1. **Verify SMTP credentials** (already configured)
 2. **Check Hostinger email settings**
 3. **Test with different SMTP port** (587 vs 465)
 
@@ -299,7 +270,7 @@ If you encounter issues:
 
 Your RestNTravel e-commerce site is now deployed on Hostinger with:
 - ✅ **Professional hosting**
-- ✅ **MySQL database**
+- ✅ **MySQL database** (u897731037_restntravel_db)
 - ✅ **Working email system**
 - ✅ **Secure HTTPS**
 - ✅ **Business-ready setup**
