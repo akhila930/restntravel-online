@@ -43,9 +43,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
               <img 
-                src="/NatureTech SimpleInventions Pvt Ltd  (Only Logo).png" 
+                src="/rnt_logo.png" 
                 alt="RestNTravel Logo" 
-                className="w-10 h-10 object-contain"
+                className="w-12 h-12 object-contain mr-3"
               />
               <span className="text-xl font-bold text-green-800">RestNTravel™</span>
             </Link>
@@ -202,9 +202,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <img 
-                  src="/NatureTech SimpleInventions Pvt Ltd  (Only Logo).png" 
+                  src="/rnt_logo.png" 
                   alt="RestNTravel Logo" 
-                  className="w-8 h-8 object-contain bg-white rounded-full p-1"
+                  className="w-20 h-20 object-contain"
                 />
                 <span className="text-xl font-bold">RestNTravel™</span>
               </div>

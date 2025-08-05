@@ -53,7 +53,7 @@ const Index = () => {
           <div className="text-center">
             <div className="flex justify-center mb-8">
               <img 
-                src="/NatureTech SimpleInventions Pvt Ltd  (Only Logo).png" 
+                src="/rnt_logo.png" 
                 alt="RestNTravel Logo" 
                 className="w-20 h-20 object-contain"
               />
