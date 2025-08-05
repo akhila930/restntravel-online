@@ -21,6 +21,18 @@
         .testimonial-card {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .admin-section {
+            display: none;
+        }
+        .admin-section.active {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -29,15 +41,15 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-green-600">🛍️ RestNTravel</h1>
+                    <h1 class="text-2xl font-bold text-green-600 cursor-pointer" onclick="showPage('home')">🛍️ RestNTravel</h1>
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="#home" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                        <a href="#products" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Shop</a>
-                        <a href="#testimonials" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Testimonials</a>
-                        <a href="#about" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
-                        <a href="#contact" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+                        <button onclick="showPage('home')" class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Home</button>
+                        <button onclick="showPage('products')" class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Shop</button>
+                        <button onclick="showPage('testimonials')" class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Testimonials</button>
+                        <button onclick="showPage('about')" class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">About</button>
+                        <button onclick="showPage('contact')" class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Contact</button>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -47,78 +59,314 @@
                     <button onclick="toggleUserMenu()" class="p-2 text-gray-700 hover:text-green-600">
                         👤
                     </button>
+                    <button onclick="showPage('login')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Login</button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero-gradient text-white py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-6">Eco-Friendly Products for Conscious Living</h1>
-            <p class="text-xl mb-8 max-w-3xl mx-auto">Discover sustainable alternatives that are good for you and the planet. Quality products that make a difference.</p>
-            <a href="#products" class="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
-                Shop Now
-            </a>
-        </div>
-    </section>
-
-    <!-- Products Section -->
-    <section id="products" class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-center mb-12">Our Products</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="products-grid">
-                <!-- Products will be loaded here -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section id="testimonials" class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="testimonials-grid">
-                <!-- Testimonials will be loaded here -->
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <h2 class="text-3xl font-bold mb-8">About RestNTravel</h2>
-                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-                    We're passionate about providing eco-friendly alternatives that don't compromise on quality or style. 
-                    Our products are carefully selected to help you live a more sustainable lifestyle while supporting 
-                    ethical manufacturing practices.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-16 bg-gray-50">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-center mb-12">Contact Us</h2>
-            <form id="contact-form" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <input type="text" name="name" placeholder="Your Name" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <input type="email" name="email" placeholder="Your Email" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                </div>
-                <input type="text" name="subject" placeholder="Subject" 
-                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                <textarea name="message" placeholder="Your Message" rows="5" required 
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
-                <button type="submit" 
-                        class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition duration-300">
-                    Send Message
+    <!-- HOME PAGE -->
+    <div id="home-page" class="page active">
+        <!-- Hero Section -->
+        <section class="hero-gradient text-white py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">Eco-Friendly Products for Conscious Living</h1>
+                <p class="text-xl mb-8 max-w-3xl mx-auto">Discover sustainable alternatives that are good for you and the planet. Quality products that make a difference.</p>
+                <button onclick="showPage('products')" class="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                    Shop Now
                 </button>
-            </form>
-        </div>
-    </section>
+            </div>
+        </section>
+
+        <!-- Featured Products -->
+        <section class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-center mb-12">Featured Products</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="featured-products">
+                    <!-- Featured products will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold mb-8">About RestNTravel</h2>
+                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                        We're passionate about providing eco-friendly alternatives that don't compromise on quality or style. 
+                        Our products are carefully selected to help you live a more sustainable lifestyle while supporting 
+                        ethical manufacturing practices.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PRODUCTS PAGE -->
+    <div id="products-page" class="page">
+        <section class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-center mb-12">Our Products</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="products-grid">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- TESTIMONIALS PAGE -->
+    <div id="testimonials-page" class="page">
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="testimonials-grid">
+                    <!-- Testimonials will be loaded here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ABOUT PAGE -->
+    <div id="about-page" class="page">
+        <section class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold mb-8">About RestNTravel</h2>
+                    <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
+                        We're passionate about providing eco-friendly alternatives that don't compromise on quality or style. 
+                        Our products are carefully selected to help you live a more sustainable lifestyle while supporting 
+                        ethical manufacturing practices.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white text-2xl">🌱</span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Eco-Friendly</h3>
+                            <p class="text-gray-600">All our products are made from sustainable materials</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white text-2xl">⭐</span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Quality</h3>
+                            <p class="text-gray-600">Premium quality products that last longer</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white text-2xl">🚚</span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Fast Delivery</h3>
+                            <p class="text-gray-600">Quick and reliable shipping to your doorstep</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- CONTACT PAGE -->
+    <div id="contact-page" class="page">
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-center mb-12">Contact Us</h2>
+                <form id="contact-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="text" name="name" placeholder="Your Name" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <input type="email" name="email" placeholder="Your Email" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <input type="text" name="subject" placeholder="Subject" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <textarea name="message" placeholder="Your Message" rows="5" required 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
+                    <button type="submit" 
+                            class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition duration-300">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- LOGIN PAGE -->
+    <div id="login-page" class="page">
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-3xl font-bold text-center mb-8">Login</h2>
+                    <form id="login-form" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" name="email" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" name="password" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <button type="submit" 
+                                class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition duration-300">
+                            Login
+                        </button>
+                    </form>
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-600">Don't have an account? 
+                            <button onclick="showPage('register')" class="text-green-600 hover:text-green-700">Register</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- REGISTER PAGE -->
+    <div id="register-page" class="page">
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-3xl font-bold text-center mb-8">Register</h2>
+                    <form id="register-form" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <input type="text" name="name" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" name="email" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" name="password" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                            <input type="password" name="confirmPassword" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <button type="submit" 
+                                class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition duration-300">
+                            Register
+                        </button>
+                    </form>
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-600">Already have an account? 
+                            <button onclick="showPage('login')" class="text-green-600 hover:text-green-700">Login</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="admin-page" class="page">
+        <section class="py-8 bg-gray-100 min-h-screen">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Admin Header -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                    <div class="flex justify-between items-center">
+                        <h1 class="text-3xl font-bold text-green-600">🛍️ RestNTravel Admin Panel</h1>
+                        <div class="flex space-x-4">
+                            <button onclick="showPage('home')" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Back to Site</button>
+                            <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Logout</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Navigation -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                    <div class="flex space-x-4">
+                        <button onclick="showAdminSection('dashboard')" class="admin-nav bg-green-600 text-white px-4 py-2 rounded-lg">Dashboard</button>
+                        <button onclick="showAdminSection('products')" class="admin-nav bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Products</button>
+                        <button onclick="showAdminSection('orders')" class="admin-nav bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Orders</button>
+                        <button onclick="showAdminSection('users')" class="admin-nav bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Users</button>
+                        <button onclick="showAdminSection('testimonials')" class="admin-nav bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Testimonials</button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="admin-section active">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-700">Total Users</h3>
+                            <p class="text-3xl font-bold text-green-600" id="total-users">0</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-700">Total Orders</h3>
+                            <p class="text-3xl font-bold text-blue-600" id="total-orders">0</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-700">Total Revenue</h3>
+                            <p class="text-3xl font-bold text-green-600" id="total-revenue">₹0</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-700">Products</h3>
+                            <p class="text-3xl font-bold text-purple-600" id="total-products">0</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-xl font-semibold mb-4">Recent Orders</h3>
+                        <div id="recent-orders">
+                            <!-- Recent orders will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <div id="products-section" class="admin-section">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-semibold">Manage Products</h3>
+                            <button onclick="showAddProductModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Add Product</button>
+                        </div>
+                        <div id="admin-products-grid">
+                            <!-- Products will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Section -->
+                <div id="orders-section" class="admin-section">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-xl font-semibold mb-6">Manage Orders</h3>
+                        <div id="admin-orders-list">
+                            <!-- Orders will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Section -->
+                <div id="users-section" class="admin-section">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-xl font-semibold mb-6">Manage Users</h3>
+                        <div id="admin-users-list">
+                            <!-- Users will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonials Section -->
+                <div id="testimonials-section" class="admin-section">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-semibold">Manage Testimonials</h3>
+                            <button onclick="showAddTestimonialModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Add Testimonial</button>
+                        </div>
+                        <div id="admin-testimonials-grid">
+                            <!-- Testimonials will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-12">
@@ -131,10 +379,10 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
                     <ul class="space-y-2">
-                        <li><a href="#home" class="text-gray-300 hover:text-white">Home</a></li>
-                        <li><a href="#products" class="text-gray-300 hover:text-white">Shop</a></li>
-                        <li><a href="#about" class="text-gray-300 hover:text-white">About</a></li>
-                        <li><a href="#contact" class="text-gray-300 hover:text-white">Contact</a></li>
+                        <li><button onclick="showPage('home')" class="text-gray-300 hover:text-white">Home</button></li>
+                        <li><button onclick="showPage('products')" class="text-gray-300 hover:text-white">Shop</button></li>
+                        <li><button onclick="showPage('about')" class="text-gray-300 hover:text-white">About</button></li>
+                        <li><button onclick="showPage('contact')" class="text-gray-300 hover:text-white">Contact</button></li>
                     </ul>
                 </div>
                 <div>
@@ -184,6 +432,58 @@
                 <div id="user-content">
                     <!-- Login/Register form or user info will be displayed here -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="add-product-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Add New Product</h3>
+                    <button onclick="hideAddProductModal()" class="text-gray-500 hover:text-gray-700">✕</button>
+                </div>
+                <form id="add-product-form" class="space-y-4">
+                    <input type="text" name="name" placeholder="Product Name" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <input type="number" name="price" placeholder="Price" step="0.01" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <input type="text" name="category" placeholder="Category" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <textarea name="description" placeholder="Description" rows="3" required 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg"></textarea>
+                    <input type="text" name="image" placeholder="Image URL" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700">
+                        Add Product
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Testimonial Modal -->
+    <div id="add-testimonial-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Add New Testimonial</h3>
+                    <button onclick="hideAddTestimonialModal()" class="text-gray-500 hover:text-gray-700">✕</button>
+                </div>
+                <form id="add-testimonial-form" class="space-y-4">
+                    <input type="text" name="name" placeholder="Customer Name" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <input type="number" name="rating" placeholder="Rating (1-5)" min="1" max="5" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <textarea name="comment" placeholder="Comment" rows="3" required 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg"></textarea>
+                    <input type="text" name="product" placeholder="Product Category" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700">
+                        Add Testimonial
+                    </button>
+                </form>
             </div>
         </div>
     </div>
