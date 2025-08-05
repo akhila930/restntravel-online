@@ -24,9 +24,22 @@ $path = $_SERVER['REQUEST_URI'];
 $path = parse_url($path, PHP_URL_PATH);
 $path = str_replace('/api/admin', '', $path);
 
+// Get query parameters
+$action = $_GET['action'] ?? '';
+
 switch ($method) {
     case 'GET':
-        if ($path == '/dashboard' || $path == '/dashboard/') {
+        if ($action == 'products') {
+            handleGetAllProducts($db);
+        } elseif ($action == 'orders') {
+            handleGetAllOrders($db);
+        } elseif ($action == 'users') {
+            handleGetAllUsers($db);
+        } elseif ($action == 'dashboard') {
+            handleGetDashboard($db);
+        } elseif ($action == 'user-orders' && isset($_GET['userId'])) {
+            handleGetUserOrders($db, $_GET['userId']);
+        } elseif ($path == '/dashboard' || $path == '/dashboard/') {
             handleGetDashboard($db);
         } elseif ($path == '/users' || $path == '/users/') {
             handleGetAllUsers($db);
@@ -60,6 +73,59 @@ switch ($method) {
         http_response_code(405);
         echo json_encode(['success' => false, 'message' => 'Method not allowed']);
         break;
+}
+
+function handleGetAllProducts($db) {
+    try {
+        $stmt = $db->prepare("SELECT * FROM products ORDER BY created_at DESC");
+        $stmt->execute();
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        echo json_encode([
+            'success' => true,
+            'products' => $products
+        ]);
+    } catch(PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Failed to load products']);
+    }
+}
+
+function handleGetAllOrders($db) {
+    try {
+        $stmt = $db->prepare("
+            SELECT o.*, u.name as user_name, u.email as user_email
+            FROM orders o
+            LEFT JOIN users u ON o.user_id = u.id
+            ORDER BY o.created_at DESC
+        ");
+        $stmt->execute();
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        echo json_encode([
+            'success' => true,
+            'orders' => $orders
+        ]);
+    } catch(PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Failed to load orders']);
+    }
+}
+
+function handleGetUserOrders($db, $userId) {
+    try {
+        $stmt = $db->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt->execute([$userId]);
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        echo json_encode([
+            'success' => true,
+            'orders' => $orders
+        ]);
+    } catch(PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Failed to load orders']);
+    }
 }
 
 function handleGetDashboard($db) {

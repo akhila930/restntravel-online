@@ -19,7 +19,9 @@ class Database {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->conn->exec("set names utf8");
         } catch(PDOException $exception) {
-            echo "Connection error: " . $exception->getMessage();
+            // Don't echo here - let the calling function handle the error
+            error_log("Database connection error: " . $exception->getMessage());
+            return null;
         }
 
         return $this->conn;
@@ -29,11 +31,10 @@ class Database {
         try {
             $conn = $this->getConnection();
             if ($conn) {
-                echo "✅ Database connected successfully\n";
                 return true;
             }
         } catch(PDOException $exception) {
-            echo "❌ Database connection failed: " . $exception->getMessage() . "\n";
+            error_log("Database connection failed: " . $exception->getMessage());
             return false;
         }
     }
@@ -41,6 +42,9 @@ class Database {
     public function initializeDatabase() {
         try {
             $conn = $this->getConnection();
+            if (!$conn) {
+                return false;
+            }
             
             // Create users table
             $conn->exec("
@@ -126,7 +130,6 @@ class Database {
                     VALUES (?, ?, ?, ?)
                 ");
                 $stmt->execute(['Admin', 'sales@restntravel.shop', $hashedPassword, 'admin']);
-                echo "✅ Default admin user created\n";
             }
 
             // Insert default products if not exists
@@ -151,7 +154,6 @@ class Database {
                 foreach ($defaultProducts as $product) {
                     $stmt->execute($product);
                 }
-                echo "✅ Default products created\n";
             }
 
             // Insert default testimonials if not exists
@@ -174,13 +176,11 @@ class Database {
                 foreach ($defaultTestimonials as $testimonial) {
                     $stmt->execute($testimonial);
                 }
-                echo "✅ Default testimonials created\n";
             }
 
-            echo "✅ Database initialized successfully\n";
             return true;
         } catch(PDOException $exception) {
-            echo "❌ Database initialization failed: " . $exception->getMessage() . "\n";
+            error_log("Database initialization failed: " . $exception->getMessage());
             return false;
         }
     }
