@@ -38,7 +38,7 @@ const Shop = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/admin?action=products');
+        const response = await fetch('/api/admin.php?action=products');
         const data = await response.json();
         
         if (data.success) {

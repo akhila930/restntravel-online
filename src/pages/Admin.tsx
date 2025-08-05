@@ -158,28 +158,28 @@ const Admin = () => {
     setLoading(true);
     try {
       // Load products
-      const productsResponse = await fetch('/api/admin?action=products');
+      const productsResponse = await fetch('/api/admin.php?action=products');
       const productsData = await productsResponse.json();
       if (productsData.success) {
         setProducts(productsData.products);
       }
 
       // Load orders
-      const ordersResponse = await fetch('/api/admin?action=orders');
+      const ordersResponse = await fetch('/api/admin.php?action=orders');
       const ordersData = await ordersResponse.json();
       if (ordersData.success) {
         setOrders(ordersData.orders);
       }
 
       // Load users
-      const usersResponse = await fetch('/api/admin?action=users');
+      const usersResponse = await fetch('/api/admin.php?action=users');
       const usersData = await usersResponse.json();
       if (usersData.success) {
         setUsers(usersData.users);
       }
 
       // Load testimonials
-      const testimonialsResponse = await fetch('/api/testimonials');
+      const testimonialsResponse = await fetch('/api/testimonials.php');
       const testimonialsData = await testimonialsResponse.json();
       if (testimonialsData.success) {
         setTestimonials(testimonialsData.testimonials);
@@ -239,7 +239,7 @@ const Admin = () => {
         };
       }
 
-      const response = await fetch('/api/admin?action=products', {
+      const response = await fetch('/api/admin.php?action=products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -287,7 +287,7 @@ const Admin = () => {
         };
       }
 
-      const response = await fetch(`/api/admin?action=products&id=${editingProduct.id}`, {
+      const response = await fetch(`/api/admin.php?action=products&id=${editingProduct.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -357,7 +357,7 @@ const Admin = () => {
 
   const updateOrderStatus = async (orderId: number, status: string) => {
     try {
-      const response = await fetch(`/api/admin?action=orders&id=${orderId}`, {
+      const response = await fetch(`/api/admin.php?action=orders&id=${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -382,7 +382,7 @@ const Admin = () => {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
     try {
-      const response = await fetch(`/api/admin?action=products&id=${productId}`, {
+      const response = await fetch(`/api/admin.php?action=products&id=${productId}`, {
         method: 'DELETE',
       });
 
@@ -405,7 +405,7 @@ const Admin = () => {
     
     // Load user's orders
     try {
-      const response = await fetch(`/api/admin?action=user-orders&userId=${user.id}`);
+      const response = await fetch(`/api/admin.php?action=user-orders&userId=${user.id}`);
       const data = await response.json();
       if (data.success) {
         setSelectedUser({ ...user, orders: data.orders });
@@ -509,7 +509,7 @@ const Admin = () => {
         };
       }
 
-      const response = await fetch('/api/testimonials', {
+      const response = await fetch('/api/testimonials.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -561,7 +561,7 @@ const Admin = () => {
         };
       }
 
-      const response = await fetch('/api/testimonials', {
+      const response = await fetch('/api/testimonials.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -632,7 +632,7 @@ const Admin = () => {
     if (!confirm('Are you sure you want to delete this testimonial?')) return;
 
     try {
-      const response = await fetch('/api/testimonials', {
+      const response = await fetch('/api/testimonials.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

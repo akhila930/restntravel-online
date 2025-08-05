@@ -43,7 +43,7 @@ const UserOrders = () => {
 
   const loadUserOrders = async () => {
     try {
-      const response = await fetch('/api/admin?action=orders');
+      const response = await fetch('/api/admin.php?action=orders');
       const data = await response.json();
       
       if (data.success) {

@@ -5,6 +5,10 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
@@ -33,53 +37,24 @@ try {
         include 'contact.php';
     } elseif (strpos($path, 'admin') === 0) {
         include 'admin.php';
-    } elseif (strpos($path, 'test-db') === 0) {
-        include 'test-db.php';
-    } elseif (strpos($path, 'simple-test') === 0) {
+    } elseif ($path === 'health') {
+        echo json_encode(['status' => 'success', 'message' => 'API is healthy']);
+    } elseif ($path === 'simple-test') {
         include 'simple-test.php';
-    } elseif (strpos($path, 'test-connection') === 0) {
+    } elseif ($path === 'test-connection') {
         include 'test-connection.php';
+    } elseif ($path === 'debug') {
+        include 'debug.php';
+    } elseif ($path === 'db-test') {
+        include 'db-test.php';
+    } elseif ($path === 'direct-test.php') { // Direct access for testing
+        include 'direct-test.php';
     } else {
-        // Health check endpoint
-        if ($path == 'health' || $path == '') {
-            echo json_encode([
-                'status' => 'OK',
-                'timestamp' => date('c'),
-                'environment' => 'production',
-                'message' => 'RestNTravel API is running',
-                'endpoints' => [
-                    'health' => '/api/health',
-                    'auth' => '/api/auth',
-                    'products' => '/api/products',
-                    'orders' => '/api/orders',
-                    'testimonials' => '/api/testimonials',
-                    'contact' => '/api/contact',
-                    'admin' => '/api/admin'
-                ]
-            ]);
-        } else {
-            http_response_code(404);
-            echo json_encode([
-                'success' => false,
-                'message' => 'API endpoint not found: ' . $path,
-                'available_endpoints' => [
-                    'health' => '/api/health',
-                    'auth' => '/api/auth',
-                    'products' => '/api/products',
-                    'orders' => '/api/orders',
-                    'testimonials' => '/api/testimonials',
-                    'contact' => '/api/contact',
-                    'admin' => '/api/admin'
-                ]
-            ]);
-        }
+        http_response_code(404);
+        echo json_encode(['status' => 'error', 'message' => 'API endpoint not found']);
     }
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Internal server error',
-        'error' => $e->getMessage()
-    ]);
+    echo json_encode(['status' => 'error', 'message' => 'Server error: ' . $e->getMessage()]);
 }
 ?> 

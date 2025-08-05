@@ -24,7 +24,7 @@ const Testimonials = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await fetch('/api/testimonials');
+        const response = await fetch('/api/testimonials.php');
         const data = await response.json();
         
         if (data.success) {
