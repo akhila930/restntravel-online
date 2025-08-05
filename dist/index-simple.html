@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RestNTravel - Eco-Friendly Products</title>
+    <meta name="description" content="Sustainable and eco-friendly products for conscious living" />
+    <link rel="stylesheet" href="./assets/index-BxIj7kO_.css">
+  </head>
+
+  <body>
+    <div id="root">
+      <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h1>🛍️ RestNTravel</h1>
+        <p>Eco-Friendly Products for Conscious Living</p>
+        <div style="margin: 20px 0;">
+          <button onclick="loadApp()" style="padding: 10px 20px; background: #16a34a; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Load Full App
+          </button>
+        </div>
+        <div id="loading" style="display: none;">
+          <p>Loading application...</p>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      function loadApp() {
+        document.getElementById('loading').style.display = 'block';
+        
+        // Try loading the module script
+        const script = document.createElement('script');
+        script.src = './assets/index-DZ02_xHv.js';
+        script.type = 'text/javascript'; // Try without module type
+        
+        script.onload = function() {
+          console.log('App loaded successfully!');
+        };
+        
+        script.onerror = function() {
+          console.error('Failed to load app');
+          document.getElementById('loading').innerHTML = '<p style="color: red;">Failed to load application. Please try refreshing the page.</p>';
+        };
+        
+        document.head.appendChild(script);
+      }
+    </script>
+  </body>
+</html> 
