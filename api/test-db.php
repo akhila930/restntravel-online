@@ -8,14 +8,14 @@ $configs = [
         'host' => 'localhost',
         'dbname' => 'u897731037_restntravel_db',
         'username' => 'u897731037_restntravel_us',
-        'password' => 'Sales@8912'
+        'password' => 'SalesRNT@8912' // Fixed password
     ],
     [
         'name' => 'Alternative Host',
         'host' => '127.0.0.1',
         'dbname' => 'u897731037_restntravel_db',
         'username' => 'u897731037_restntravel_us',
-        'password' => 'Sales@8912'
+        'password' => 'SalesRNT@8912' // Fixed password
     ]
 ];
 

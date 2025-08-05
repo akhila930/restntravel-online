@@ -19,6 +19,8 @@ if (strpos($path, '/auth') === 0) {
     include 'contact.php';
 } elseif (strpos($path, '/admin') === 0) {
     include 'admin.php';
+} elseif (strpos($path, '/test-db.php') === 0) {
+    include 'test-db.php';
 } else {
     // Health check endpoint
     if ($path == '/health' || $path == '/health/') {

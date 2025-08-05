@@ -4,7 +4,7 @@ class Database {
     private $host = 'localhost';
     private $db_name = 'u897731037_restntravel_db';
     private $username = 'u897731037_restntravel_us';
-    private $password = 'Sales@8912';
+    private $password = 'SalesRNT@8912'; // Fixed password
     private $conn;
 
     public function getConnection() {
